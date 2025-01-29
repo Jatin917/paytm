@@ -1,10 +1,10 @@
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server";
-import { authOptions } from "../../lib/auth";
+import { AUTH_OPTIONS } from "../../lib/auth";
 
 export const GET = async () => {
-    const session = await getServerSession(authOptions);
-    if (session.user) {
+    const session = await getServerSession(AUTH_OPTIONS);
+    if (session && session.user) {
         return NextResponse.json({
             user: session.user
         })

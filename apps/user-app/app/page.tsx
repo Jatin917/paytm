@@ -6,6 +6,7 @@ export default function Page(): JSX.Element {
   const session = useSession();
   return (
    <div>
+      <button onClick={() => signIn()}>button</button>
       <Appbar onSignin={signIn} onSignout={signOut} user={session.data?.user} />
    </div>
   );
