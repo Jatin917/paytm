@@ -1,0 +1,26 @@
+{
+  "name": "bank-webhook",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/server.js",
+    "start:dev": "ts-node src/server.ts",
+    "dev": "nodemon"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@repo/db": "*",
+    "@types/express": "^5.0.0",
+    "esbuild": "^0.24.2",
+    "express": "^4.21.2",
+    "nodemon": "^3.1.9",
+    "tsup": "^8.3.6"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^2.0.0"
+  }
+}
