@@ -4,7 +4,8 @@ import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import db from "@repo/db/client"
-import type { User } from "next-auth";
+import type { Session, User } from "next-auth";
+import { JWT } from 'next-auth/jwt';
 
 // Define your custom user type extending NextAuth's User
 interface CustomUser extends User {
@@ -76,4 +77,17 @@ export const AUTH_OPTIONS = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
     })
   ],
+  // session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async session({ session, token }: { session: Session; token: JWT }) {
+      return session;
+    },
+    async jwt({ token, user }: { user: User; token: JWT }) {
+      // if (user) {
+      //   token.id = user.id;
+      // }
+      // return token;
+    },
+  },
 };
