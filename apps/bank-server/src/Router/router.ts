@@ -5,6 +5,6 @@ import { sendMoney } from '../Controller/SendMoney/sendMoney';
 const Router = express.Router();
 
 Router.get('/getBalance', getBalance);
-Router.post('/addBalance', sendMoney);
+Router.post('/sendmoney', sendMoney);
 
 export default Router;
