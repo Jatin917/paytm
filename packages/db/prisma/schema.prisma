@@ -14,6 +14,7 @@ model User {
   number            String              @unique
   password          String
   OnRampTransaction OnRampTransaction[]
+  p2pTransaction    p2pTransaction[]
   Balance           Balance[]
 }
 
@@ -29,6 +30,15 @@ model OnRampTransaction {
   status    OnRampStatus
   token     String       @unique
   provider  String
+  amount    Int
+  startTime DateTime
+  userId    Int
+  user      User         @relation(fields: [userId], references: [id])
+}
+model p2pTransaction {
+  id        Int          @id @default(autoincrement())
+  status    OnRampStatus @default(Processing)
+  token     String       @unique
   amount    Int
   startTime DateTime
   userId    Int
