@@ -78,6 +78,15 @@ export const sendMoney = async(req:any, res:any) =>{
               if(!recipient){
                 throw new Error("Problem at receiver end");
               }
+              await tx.p2pTransaction.create({
+                data:{
+                    status:'Success',
+                    amount:amount,
+                    userId:userId,
+                    startTime: new Date().toISOString(),
+                    token:crypto.randomUUID()
+                }
+              })
               return {
                 message:"Successfully Sent!!!"
               }
