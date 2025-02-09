@@ -40,12 +40,13 @@ export const AUTH_OPTIONS = {
             
             if (!passwordValid) return null;
 
-            return {
+            const user = {
               id: existingUser.id.toString(),
               name: existingUser.name,
-              email: existingUser.number, // Consider if email should be phone number
+              email: existingUser.email, // Consider if email should be phone number
               phone: existingUser.number
             };
+            return user;
           }
 
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
@@ -56,12 +57,13 @@ export const AUTH_OPTIONS = {
             }
           });
 
-          return {
+          const user = {
             id: newUser.id.toString(),
             name: null,
             email: newUser.number,
             phone: newUser.number
           };
+          return user;
         } catch (error) {
           console.error("Authentication error:", error);
           return null;
@@ -77,17 +79,35 @@ export const AUTH_OPTIONS = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
     })
   ],
-  // session: { strategy: "jwt" },
+  session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
+  jwt: {
+    encryption: false,
+  },
   callbacks: {
-    async session({ session, token }: { session: Session; token: JWT }) {
-      return session;
+    async jwt({ token, user }) {
+      console.log("JWT callback called. Token:", token, "User:", user);
+
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+      }
+
+      return token;
     },
-    async jwt({ token, user }: { user: User; token: JWT }) {
-      // if (user) {
-      //   token.id = user.id;
-      // }
-      // return token;
+    async session({ session, token }) {
+      console.log("Session callback called. Token:", token);
+
+      if (token) {
+        session.user = {
+          id: token.id,
+          name: token.name,
+          email: token.email,
+        };
+      }
+
+      return session;
     },
   },
 };
