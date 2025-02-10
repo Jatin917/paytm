@@ -24,7 +24,8 @@ const getTodayTransactions = async (tx:any) => {
             },
         });
         let amount = 0;
-        transactions.forEach((t)=>{
+        if(!transactions) return amount;
+        transactions.forEach((t:any)=>{
             amount+=t.amount;
         })
         return amount
@@ -37,19 +38,26 @@ const getTodayTransactions = async (tx:any) => {
 
 export const sendMoney = async(req:any, res:any) =>{
     try {
+        // console.log("sendMoney");
         // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
-        const {userId, amount, recieverId} = req.body;
+        const {userId, amount, recieverId} = req.body.user;
+        // console.log(userId, amount, recieverId);
         const result = await prisma?.$transaction(async(tx)=>{
-            const amount = await getTodayTransactions(tx);
-            if(amount && amount>25000){
+            const amountTodays = await getTodayTransactions(tx);
+            console.log("amountTodays transaction");
+            if(amountTodays + amount>25000){
+                console.log("amountTodays");
                 throw new Error("Todays limit Exceded, Please try again tommorow")
             }
+            console.log("Transaction ",  userId, amount, recieverId);
             const senderBalance = await tx.balance.findFirst({
                 where:{
                     userId:userId
                 }
             });
-            if(!senderBalance){
+            console.log(senderBalance);
+            
+            if(!senderBalance || senderBalance.amount<amount){
                 throw new Error("Insuffiecient Funds");
             }
             const sender = await tx.balance.update({
@@ -64,6 +72,10 @@ export const sendMoney = async(req:any, res:any) =>{
             });
             if(!sender || sender.amount<0){
                 throw new Error("Insuffiecient Funds");
+            }
+            const recipientBalance = await tx.balance.findFirst({ where: { userId: recieverId } });
+            if (!recipientBalance) {
+                throw new Error("Receiver account does not exist");
             }
             const recipient = await tx.balance.update({
                 data: {
@@ -93,9 +105,11 @@ export const sendMoney = async(req:any, res:any) =>{
         });
         return res.status(200).json(result);
     } catch (error) {
-        if((error as Error).message==="Insuffiecient Funds"){
-            return res.status(404).json({message:(error as Error).message})
-        }
-        return res.status(500).json({message:(error as Error).message});
+        console.error(error);
+
+        // Ensure proper error message is returned
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+
+        return res.status(errorMessage.includes("Insufficient Funds") ? 400 : 500).json({ message: errorMessage });
     }
 }

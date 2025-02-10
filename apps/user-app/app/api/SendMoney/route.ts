@@ -7,15 +7,20 @@ interface reqTypes {
     amount:string,
     recieverId:string
 }
-export async function POST(req:NextRequest, res:NextResponse){
+export async function POST(req:NextRequest){
     try {
-        const user : reqTypes =  req.body;
+        const user =  await req.json();
+        // console.log("user body is: ",user);
         // console.log(userId, amount, recieverId);
         const response = await axios.post('http://localhost:3003/api-hdfc/sendmoney/',{
-            user
+          user
         })
+        if(!response){
+          return NextResponse.json({message:"Please Try Again Some Time"}, {status:404});
+        }
+        return NextResponse.json({message:"Successfully Sent!!!"}, {status:200});
     } catch (error) {
-        return res;
+        return NextResponse.json({message:(error as Error).message});
     }
 }
 
