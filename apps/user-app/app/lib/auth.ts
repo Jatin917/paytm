@@ -85,7 +85,7 @@ export const AUTH_OPTIONS = {
     encryption: false,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user } : {token:any, user:any}) {
       console.log("JWT callback called. Token:", token, "User:", user);
 
       if (user) {
@@ -96,7 +96,7 @@ export const AUTH_OPTIONS = {
 
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: {session:any, token:any}) {
       console.log("Session callback called. Token:", token);
 
       if (token) {
