@@ -52,7 +52,7 @@ export const sendMoney = async(req:any, res:any) =>{
             console.log("Transaction ",  userId, amount, recieverId);
             const senderBalance = await tx.balance.findFirst({
                 where:{
-                    userId:userId
+                    userId:parseInt(userId)
                 }
             });
             console.log(senderBalance);
@@ -63,42 +63,37 @@ export const sendMoney = async(req:any, res:any) =>{
             const sender = await tx.balance.update({
                 data:{
                     amount:{
-                        decrement:amount
+                        decrement:parseInt(amount)
                     }
                 },
                 where:{
-                    userId:userId
+                    userId:parseInt(userId)
                 }
             });
             if(!sender || sender.amount<0){
                 throw new Error("Insuffiecient Funds");
             }
-            const recipientBalance = await tx.balance.findFirst({ where: { userId: recieverId } });
+            const recipientId = await tx.user.findFirst({where:{number:recieverId}});
+            if(!recipientId) throw new Error("Invalid Number!!!");
+            const recipientBalance = await tx.balance.findFirst({ where: { userId: recipientId.id } });
             if (!recipientBalance) {
                 throw new Error("Receiver account does not exist");
             }
             const recipient = await tx.balance.update({
                 data: {
                   amount: {
-                    increment: amount,
+                    increment: parseInt(amount),
                   },
                 },
                 where: {
-                  userId: recieverId,
+                  userId: recipientId.id,
                 },
               })
               if(!recipient){
                 throw new Error("Problem at receiver end");
               }
-              await tx.p2pTransaction.create({
-                data:{
-                    status:'Success',
-                    amount:amount,
-                    userId:userId,
-                    startTime: new Date().toISOString(),
-                    token:crypto.randomUUID()
-                }
-              })
+            //  yhaa prr bank webhook server ko request bhejenga that person ne jo amount bheja hain wo successfully sent ho gya hain , what if webhook is down???
+            await sentRequestToWebhook(userId, amount, token);
               return {
                 message:"Successfully Sent!!!"
               }

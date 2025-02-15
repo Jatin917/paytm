@@ -10,8 +10,9 @@ interface reqTypes {
 export async function POST(req:NextRequest){
     try {
         const user =  await req.json();
-        // console.log("user body is: ",user);
+        console.log("user body is: ",user);
         // console.log(userId, amount, recieverId);
+
         const response = await axios.post('http://localhost:3003/api-hdfc/sendmoney/',{
           user
         })

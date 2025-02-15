@@ -1,9 +1,37 @@
+import { getServerSession } from "next-auth";
 import { SendMoney } from "../../component/SendMoney/SendMoney";
+import { AUTH_OPTIONS } from "../../lib/auth";
+import prisma from "@repo/db/client";
+import { OnP2PTransactions } from "../../component/p2pTransaction/page";
 
+interface userTypes {
+    id: string | null
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+}
+
+async function getOnp2pTransactions() {
+    const session = await getServerSession(AUTH_OPTIONS);
+    const txns = await prisma.p2pTransfer.findMany({
+        where: {
+            fromUserId: Number((session?.user as userTypes)?.id) || undefined
+        }
+    });
+    return txns.map(t => ({
+        time: t.timestamp,
+        amount: t.amount,
+        status: t.status,
+    }))
+}
 export default async function(){
+    const transactions = await getOnp2pTransactions();
     return <div className="w-full h-full flex items-center justify-center">
-        <div className="w-80">
+        <div className="w-[400px]">
             <SendMoney/>
+        </div>
+        <div className="pt-4 w-[50%] ml-40">
+            <OnP2PTransactions transactions={transactions} />
         </div>
     </div>
 }

@@ -6,6 +6,7 @@ import { TextInput } from "@repo/ui/textinput"
 import axios from "axios"
 import { useSession } from "next-auth/react"
 import {useState} from 'react'
+import { createP2Pransaction } from "../../lib/actions/createP2PTransaction"
 
 
 export const SendMoney = () => {
@@ -14,7 +15,9 @@ export const SendMoney = () => {
     const session = useSession();
     const sendMoneyHandler = async () =>{
         try {
-            const response = await axios.post(`${process.env.NEXTAUTH_URL}/api/SendMoney`, {
+            const url = process.env.NEXTAUTH_URL || 'http://localhost:3001';
+            console.log("url is ", url)
+            const response = await axios.post(`${url}/api/SendMoney`, {
                 userId:session?.data?.user?.id,
                 amount:amount,
                 recieverId:number
@@ -32,8 +35,9 @@ export const SendMoney = () => {
             <TextInput label={"Number"} placeholder={"9874563210"} onChange={(e)=>setNumber(e)}/>
             <TextInput label={"Amount"} placeholder={"100"} onChange={(e)=>setAmount(e)}/>
             <div className="flex justify-center pt-4">
-                <Button onClick={() => {
+                <Button onClick={async() => {
                     sendMoneyHandler();
+                    await createP2Pransaction(parseInt(amount), number);
                 }}>
                 Send Money
                 </Button>

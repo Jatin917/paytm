@@ -44,6 +44,8 @@ model p2pTransfer {
   fromUser   User         @relation(name: "FromUserRelation", fields: [fromUserId], references: [id])
   toUserId   Int
   toUser     User         @relation(name: "ToUserRelation", fields: [toUserId], references: [id])
+  status     OnRampStatus
+  token     String       @unique
 }
 
 model Balance {
