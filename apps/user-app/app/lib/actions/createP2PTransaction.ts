@@ -27,6 +27,7 @@ export async function createP2Pransaction(amount: number, recieverNumber: string
     });
 
     return {
+        token,
         message: "Done"
     }
 }

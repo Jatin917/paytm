@@ -13,14 +13,15 @@ export const SendMoney = () => {
     const [amount, setAmount] = useState('');
     const [number, setNumber] = useState('');
     const session = useSession();
-    const sendMoneyHandler = async () =>{
+    const sendMoneyHandler = async (token:string) =>{
         try {
             const url = process.env.NEXTAUTH_URL || 'http://localhost:3001';
             console.log("url is ", url)
             const response = await axios.post(`${url}/api/SendMoney`, {
                 userId:session?.data?.user?.id,
                 amount:amount,
-                recieverId:number
+                recieverId:number,
+                token
             });
             if(!response){
                 throw new Error("No respones");
@@ -36,8 +37,9 @@ export const SendMoney = () => {
             <TextInput label={"Amount"} placeholder={"100"} onChange={(e)=>setAmount(e)}/>
             <div className="flex justify-center pt-4">
                 <Button onClick={async() => {
-                    sendMoneyHandler();
-                    await createP2Pransaction(parseInt(amount), number);
+                    const response = await createP2Pransaction(parseInt(amount), number);
+                    if(!response) return {message:"no transaction was made"};
+                    await sendMoneyHandler(response.token);
                 }}>
                 Send Money
                 </Button>

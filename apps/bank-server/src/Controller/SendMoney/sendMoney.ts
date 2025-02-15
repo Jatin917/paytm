@@ -1,4 +1,5 @@
 import prisma from '@repo/db/client';
+import axios from 'axios';
 
 
 import { subHours, startOfDay, endOfDay } from 'date-fns';
@@ -35,76 +36,107 @@ const getTodayTransactions = async (tx:any) => {
     }
 };
 
-
-export const sendMoney = async(req:any, res:any) =>{
+const sentRequestToWebhook = async(userId, amount, token)=> {
     try {
-        // console.log("sendMoney");
-        // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
-        const {userId, amount, recieverId} = req.body.user;
-        // console.log(userId, amount, recieverId);
-        const result = await prisma?.$transaction(async(tx)=>{
-            const amountTodays = await getTodayTransactions(tx);
-            console.log("amountTodays transaction");
-            if(amountTodays + amount>25000){
-                console.log("amountTodays");
-                throw new Error("Todays limit Exceded, Please try again tommorow")
-            }
-            console.log("Transaction ",  userId, amount, recieverId);
-            const senderBalance = await tx.balance.findFirst({
-                where:{
-                    userId:parseInt(userId)
-                }
-            });
-            console.log(senderBalance);
-            
-            if(!senderBalance || senderBalance.amount<amount){
-                throw new Error("Insuffiecient Funds");
-            }
-            const sender = await tx.balance.update({
-                data:{
-                    amount:{
-                        decrement:parseInt(amount)
-                    }
-                },
-                where:{
-                    userId:parseInt(userId)
-                }
-            });
-            if(!sender || sender.amount<0){
-                throw new Error("Insuffiecient Funds");
-            }
-            const recipientId = await tx.user.findFirst({where:{number:recieverId}});
-            if(!recipientId) throw new Error("Invalid Number!!!");
-            const recipientBalance = await tx.balance.findFirst({ where: { userId: recipientId.id } });
-            if (!recipientBalance) {
-                throw new Error("Receiver account does not exist");
-            }
-            const recipient = await tx.balance.update({
-                data: {
-                  amount: {
-                    increment: parseInt(amount),
-                  },
-                },
-                where: {
-                  userId: recipientId.id,
-                },
-              })
-              if(!recipient){
-                throw new Error("Problem at receiver end");
-              }
-            //  yhaa prr bank webhook server ko request bhejenga that person ne jo amount bheja hain wo successfully sent ho gya hain , what if webhook is down???
-            await sentRequestToWebhook(userId, amount, token);
-              return {
-                message:"Successfully Sent!!!"
-              }
+        await axios.post(`${process.env.SERVER_WEBHOOK}/hdfcWebhookOnP2P`,{
+            user_identifier:userId,
+            amount:amount,
+            token:token
         });
-        return res.status(200).json(result);
+        return;
     } catch (error) {
-        console.error(error);
-
-        // Ensure proper error message is returned
-        const errorMessage = error instanceof Error ? error.message : "Something went wrong";
-
-        return res.status(errorMessage.includes("Insufficient Funds") ? 400 : 500).json({ message: errorMessage });
+        console.log((error as Error).message);
+        return;
     }
 }
+
+export const sendMoney = async (req: any, res: any) => {
+    try {
+      // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
+      const { userId, amount, recieverId, token } = req.body.user;
+  
+      // Ensure amount is a valid number
+      const parsedAmount = Number(amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({ message: "Invalid amount value" });
+      }
+  
+      const result = await prisma.$transaction(async (tx) => {
+        // 1️⃣ ✅ Check Today's Transaction Limit (Max ₹25,000)
+        const amountTodays = await getTodayTransactions(tx);
+        console.log("amountTodays transaction");
+        if (amountTodays + parsedAmount > 25000) {
+          console.log("amountTodays");
+          throw new Error("Today's limit exceeded, please try again tomorrow");
+        }
+  
+        console.log("Transaction ", userId, parsedAmount, recieverId);
+  
+        // 2️⃣ ✅ Get Sender's Balance
+        const senderBalance = await tx.balance.findFirst({
+          where: { userId: parseInt(userId) },
+        });
+  
+        console.log(senderBalance);
+  
+        if (!senderBalance || senderBalance.amount < parsedAmount) {
+          throw new Error("Insufficient Funds");
+        }
+  
+        // 3️⃣ ✅ Deduct Money from Sender
+        const sender = await tx.balance.update({
+          data: {
+            amount: {
+              decrement: parsedAmount, // Fix: Using `parsedAmount` to ensure correct type
+            },
+          },
+          where: { userId: parseInt(userId) },
+        });
+  
+        console.log("Sender Balance After:", sender.amount);
+        if (sender.amount < 0) {
+          throw new Error("Insufficient Funds");
+        }
+  
+        // 4️⃣ ✅ Find Recipient ID
+        const recipientId = await tx.user.findFirst({ where: { number: recieverId } });
+        if (!recipientId) throw new Error("Invalid Number!!!");
+  
+        const recipientBalance = await tx.balance.findFirst({ where: { userId: recipientId.id } });
+        if (!recipientBalance) {
+          throw new Error("Receiver account does not exist");
+        }
+  
+        // 5️⃣ ✅ Add Money to Recipient
+        const recipient = await tx.balance.update({
+          data: {
+            amount: {
+              increment: parsedAmount, // Fix: Using `parsedAmount` for consistency
+            },
+          },
+          where: { userId: recipientId.id },
+        });
+  
+        console.log("Recipient Balance After:", recipient.amount);
+  
+        if (!recipient) {
+          throw new Error("Problem at receiver end");
+        }
+  
+        // yhaa prr bank webhook server ko request bhejenga that person ne jo amount bheja hain wo successfully sent ho gya hain , what if webhook is down???
+        return { message: "Successfully Sent!!!" };
+      }, { maxWait: 5000, timeout: 10000 });
+  
+      // 6️⃣ ✅ Send Webhook Request after Transaction Success
+        await sentRequestToWebhook(userId, parsedAmount, token);
+  
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Error:", error);
+  
+      // Ensure proper error message is returned
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      return res.status(errorMessage.includes("Insufficient Funds") ? 400 : 500).json({ message: errorMessage });
+    }
+  };
+  

@@ -74,21 +74,6 @@ app.post("/hdfcWebhookOnP2P", async (req, res) => {
 
     try {
         await db.$transaction([
-            db.balance.upsert({
-                where: {
-                    userId: Number(paymentInformation.userId)
-                },
-                update: {
-                    amount: {
-                        increment: Number(paymentInformation.amount)
-                    }
-                },
-                create: {
-                    userId: Number(paymentInformation.userId),
-                    amount: Number(paymentInformation.amount), // Initial amount,
-                    locked:0
-                }
-            }),
             db.p2pTransfer.updateMany({
                 where: {
                     token: paymentInformation.token
