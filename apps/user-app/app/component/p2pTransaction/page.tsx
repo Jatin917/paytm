@@ -42,8 +42,8 @@ export const OnP2PTransactions = ({
           </div>
         ))}
       </div>
-      <button onClick={()=>setIndex((prev)=>prev-1)} className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled={index===0}>Prev</button>
-      <button onClick={()=>setIndex((prev)=>prev+1)} className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled={transactionToBeShown.length===0}>Next</button>
+      <button onClick={()=>setIndex((prev)=>prev-1)} className="bg-gray-800 text-white  disabled:opacity-90 disabled:cursor-not-allowed  hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2" disabled={index===0}>Prev</button>
+      <button onClick={()=>setIndex((prev)=>prev+1)} className="bg-gray-800 text-white  disabled:opacity-90 disabled:cursor-not-allowed  hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2" disabled={transactionToBeShown.length===0}>Next</button>
     </Card>
   );
 };
