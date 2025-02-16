@@ -31,6 +31,9 @@ export const OnP2PTransactions = ({
                 <div className="flex flex-col justify-center">
                     + Rs {t.amount / 100}
                 </div>
+                <div className="flex flex-col justify-center">
+                    {t.status}
+                </div>
 
             </div>)}
         </div>

@@ -16,9 +16,9 @@ const getTodayTransactions = async (tx:any) => {
         console.log("Fetching transactions from", startUtc, "to", endUtc);
 
         // Fetch transactions within this time range
-        const transactions = await tx.p2pTransaction.findMany({
+        const transactions = await tx.p2pTransfer.findMany({
             where: {
-                startTime: {
+                timestamp: {
                     gte: startUtc, // Greater than or equal to start of the day
                     lte: endUtc, // Less than or equal to end of the day
                 },
@@ -56,7 +56,7 @@ export const sendMoney = async (req: any, res: any) => {
       const { userId, amount, recieverId, token } = req.body.user;
   
       // Ensure amount is a valid number
-      const parsedAmount = Number(amount);
+      const parsedAmount = Number(amount)*100;
       if (isNaN(parsedAmount) || parsedAmount <= 0) {
         return res.status(400).json({ message: "Invalid amount value" });
       }
@@ -65,7 +65,8 @@ export const sendMoney = async (req: any, res: any) => {
         // 1️⃣ ✅ Check Today's Transaction Limit (Max ₹25,000)
         const amountTodays = await getTodayTransactions(tx);
         console.log("amountTodays transaction");
-        if (amountTodays + parsedAmount > 25000) {
+        // as bank main money paise main store hain and we are sending as rupees
+        if (amountTodays + parsedAmount > 2500000) {
           console.log("amountTodays");
           throw new Error("Today's limit exceeded, please try again tomorrow");
         }
