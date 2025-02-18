@@ -3,7 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
-import db from "@repo/db/client"
+import db from "../../../../packages/db/src"
 import type { Session, User } from "next-auth";
 import { JWT } from 'next-auth/jwt';
 

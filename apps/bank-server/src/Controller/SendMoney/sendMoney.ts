@@ -1,7 +1,5 @@
 import prisma from '@repo/db/client';
 import axios from 'axios';
-
-
 import { subHours, startOfDay, endOfDay } from 'date-fns';
 
 const getTodayTransactions = async (tx:any) => {
@@ -36,7 +34,13 @@ const getTodayTransactions = async (tx:any) => {
     }
 };
 
-const sentRequestToWebhook = async(userId, amount, token)=> {
+interface webhookPropsTypes {
+  userId:string,
+  amount:number,
+  token:number
+}
+
+const sentRequestToWebhook = async(userId: webhookPropsTypes['userId'], amount: webhookPropsTypes['amount'], token : webhookPropsTypes['token'])=> {
     try {
         await axios.post(`${process.env.SERVER_WEBHOOK}/hdfcWebhookOnP2P`,{
             user_identifier:userId,

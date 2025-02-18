@@ -3,9 +3,9 @@
   "globalDependencies": ["**/.env.*local"],
   "pipeline": {
     "build": {
-      "env": ["NEXTAUTH_URL", "NEXTAUTH_SECRET"],
+      "env": ["NEXTAUTH_URL", "NEXTAUTH_SECRET", "DATABASE_URL", "GITHUB_ID", "GITHUB_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "JWT_SECRET", "SERVER_WEBHOOK", "PORT"],
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
