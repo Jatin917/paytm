@@ -9,7 +9,7 @@
     "./appbar": "./src/Appbar.tsx",
     "./center": "./src/center.tsx",
     "./select": "./src/select.tsx",
-    "./textinput": "./src/textinput.tsx"
+    "./textinput": "./src/textInput.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
