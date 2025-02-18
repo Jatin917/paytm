@@ -1,5 +1,5 @@
 {
-  "name": "docs",
+  "name": "user",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,8 +9,9 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
-    "@repo/store": "*",
-    "@repo/ui": "*",
+    "@repo/store": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "@repo/db":"workspace:*",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "axios": "^1.7.9",
