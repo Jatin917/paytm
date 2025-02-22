@@ -54,84 +54,94 @@ const sentRequestToWebhook = async(userId: webhookPropsTypes['userId'], amount: 
     }
 }
 
+const sendMoneyFunction = async (userId:string, amount:string, recieverId:string, token:string) => {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // 1️⃣ ✅ Check Today's Transaction Limit (Max ₹25,000)
+      const amountTodays = await getTodayTransactions(tx);
+      console.log("amountTodays transaction");
+      // as bank main money paise main store hain and we are sending as rupees
+      if (amountTodays + parsedAmount > 2500000) {
+        console.log("amountTodays");
+        throw new Error("Today's limit exceeded, please try again tomorrow");
+      }
+
+      console.log("Transaction ", userId, parsedAmount, recieverId);
+
+      // 2️⃣ ✅ Get Sender's Balance
+      const senderBalance = await tx.balance.findFirst({
+        where: { userId: parseInt(userId) },
+      });
+
+      console.log(senderBalance);
+
+      if (!senderBalance || senderBalance.amount < parsedAmount) {
+        throw new Error("Insufficient Funds");
+      }
+
+      // 3️⃣ ✅ Deduct Money from Sender
+      const sender = await tx.balance.update({
+        data: {
+          amount: {
+            decrement: parsedAmount, // Fix: Using `parsedAmount` to ensure correct type
+          },
+        },
+        where: { userId: parseInt(userId) },
+      });
+
+      console.log("Sender Balance After:", sender.amount);
+      if (sender.amount < 0) {
+        throw new Error("Insufficient Funds");
+      }
+
+      // 4️⃣ ✅ Find Recipient ID
+      const recipientId = await tx.user.findFirst({ where: { number: recieverId } });
+      if (!recipientId) throw new Error("Invalid Number!!!");
+
+      const recipientBalance = await tx.balance.findFirst({ where: { userId: recipientId.id } });
+      if (!recipientBalance) {
+        throw new Error("Receiver account does not exist");
+      }
+
+      // 5️⃣ ✅ Add Money to Recipient
+      const recipient = await tx.balance.update({
+        data: {
+          amount: {
+            increment: parsedAmount, // Fix: Using `parsedAmount` for consistency
+          },
+        },
+        where: { userId: recipientId.id },
+      });
+
+      console.log("Recipient Balance After:", recipient.amount);
+
+      if (!recipient) {
+        throw new Error("Problem at receiver end");
+      }
+
+      // yhaa prr bank webhook server ko request bhejenga that person ne jo amount bheja hain wo successfully sent ho gya hain , what if webhook is down???
+      return { message: "Successfully Sent!!!" };
+    }, { maxWait: 5000, timeout: 10000 });
+
+  } catch (error) {
+    
+  }
+}
+
 export const sendMoney = async (req: any, res: any) => {
+  // yha main redis main request ko add kr dunga... and when the request finally be sent to webhook i will remove it from redis 1. if the max retry has been reached the request for failure payment will be sent, 2. in case the send money function works we will send success message
     try {
       // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
       const { userId, amount, recieverId, token } = req.body.user;
-  
+      // this function will handle the db process
+      await sendMoneyFunction(userId, amount, recieverId, token);
       // Ensure amount is a valid number
       const parsedAmount = Number(amount)*100;
       if (isNaN(parsedAmount) || parsedAmount <= 0) {
         return res.status(400).json({ message: "Invalid amount value" });
       }
   
-      const result = await prisma.$transaction(async (tx) => {
-        // 1️⃣ ✅ Check Today's Transaction Limit (Max ₹25,000)
-        const amountTodays = await getTodayTransactions(tx);
-        console.log("amountTodays transaction");
-        // as bank main money paise main store hain and we are sending as rupees
-        if (amountTodays + parsedAmount > 2500000) {
-          console.log("amountTodays");
-          throw new Error("Today's limit exceeded, please try again tomorrow");
-        }
-  
-        console.log("Transaction ", userId, parsedAmount, recieverId);
-  
-        // 2️⃣ ✅ Get Sender's Balance
-        const senderBalance = await tx.balance.findFirst({
-          where: { userId: parseInt(userId) },
-        });
-  
-        console.log(senderBalance);
-  
-        if (!senderBalance || senderBalance.amount < parsedAmount) {
-          throw new Error("Insufficient Funds");
-        }
-  
-        // 3️⃣ ✅ Deduct Money from Sender
-        const sender = await tx.balance.update({
-          data: {
-            amount: {
-              decrement: parsedAmount, // Fix: Using `parsedAmount` to ensure correct type
-            },
-          },
-          where: { userId: parseInt(userId) },
-        });
-  
-        console.log("Sender Balance After:", sender.amount);
-        if (sender.amount < 0) {
-          throw new Error("Insufficient Funds");
-        }
-  
-        // 4️⃣ ✅ Find Recipient ID
-        const recipientId = await tx.user.findFirst({ where: { number: recieverId } });
-        if (!recipientId) throw new Error("Invalid Number!!!");
-  
-        const recipientBalance = await tx.balance.findFirst({ where: { userId: recipientId.id } });
-        if (!recipientBalance) {
-          throw new Error("Receiver account does not exist");
-        }
-  
-        // 5️⃣ ✅ Add Money to Recipient
-        const recipient = await tx.balance.update({
-          data: {
-            amount: {
-              increment: parsedAmount, // Fix: Using `parsedAmount` for consistency
-            },
-          },
-          where: { userId: recipientId.id },
-        });
-  
-        console.log("Recipient Balance After:", recipient.amount);
-  
-        if (!recipient) {
-          throw new Error("Problem at receiver end");
-        }
-  
-        // yhaa prr bank webhook server ko request bhejenga that person ne jo amount bheja hain wo successfully sent ho gya hain , what if webhook is down???
-        return { message: "Successfully Sent!!!" };
-      }, { maxWait: 5000, timeout: 10000 });
-  
+
       // 6️⃣ ✅ Send Webhook Request after Transaction Success
         await sentRequestToWebhook(userId, parsedAmount, token);
   

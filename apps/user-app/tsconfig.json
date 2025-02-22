@@ -7,10 +7,10 @@
       }
     ],
     "paths": {
-      "@repo/db": ["../../packages/db/src"],
-      "@repo/ui":["../../packages/ui/src"],
-      "@repo/store":["../../packages/store/src"],
-      // "*": ["./src/*"]
+      // "@repo/db": ["../../packages/db/src"],
+      // "@repo/ui":["../../packages/ui/src"],
+      // "@repo/store":["../../packages/store/src"],
+      "*": ["./src/*"]
     },
   },
   "include": [
