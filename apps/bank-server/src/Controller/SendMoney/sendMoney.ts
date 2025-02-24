@@ -43,7 +43,7 @@ const sentRequestToWebhook = async(userId: webhookPropsTypes['userId'], amount: 
             user_identifier:userId,
             amount:amount,
             token:token, 
-            message
+            message:message
         });
         return;
     } catch (error) {
@@ -126,11 +126,14 @@ const sendMoneyFunction = async (userId:string, parsedAmount:number, recieverId:
 }
 
 export const sendMoney = async (req: any, res: any) => {
-    const client = await getRedisClient();
+  console.log("client bn rha hain")
+  const client = await getRedisClient();
+  console.log("client bn gya hain")
     try {
       // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
       const { userId, amount, recieverId, token } = req.body.user;
-      await insertIntoRedis(userId, amount, recieverId, token);
+      if(!token) return res.status(401).json({message:"missing field"});
+      await insertIntoRedis(token);
       // this function will handle the db process
       await sendMoneyFunction(userId, amount, recieverId, token);
       // Ensure amount is a valid number
@@ -141,6 +144,7 @@ export const sendMoney = async (req: any, res: any) => {
       let response;
       for(let i = 0;i<=5;i++){
         const maxRetry = await client?.hGet(token, "maxRetry") || i;
+        console.log("matRetyr ", maxRetry);
         if(Number(maxRetry)-1>0){
           response = await sendMoneyFunction(userId, parsedAmount, recieverId, token);
           if(response.status===500){
@@ -157,6 +161,7 @@ export const sendMoney = async (req: any, res: any) => {
         }
       }
       // 6️⃣ ✅ Send Webhook Request after Transaction Success
+      console.log("response of money sent is ", response)
       await sentRequestToWebhook(userId, parsedAmount, token, (response?.message || "Failed"));
       return res.status(200).json(response?.data);
     } catch (error) {

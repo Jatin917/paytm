@@ -80,6 +80,7 @@ app.post("/hdfcWebhookOnP2P", async (req, res) => {
         message:req.body.message
     };
     const message = paymentInformation.message;
+    console.log("message in bank webhook is ", message);
     try {
         await db.$transaction([
             db.p2pTransfer.updateMany({

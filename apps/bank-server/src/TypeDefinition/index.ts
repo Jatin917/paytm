@@ -5,7 +5,7 @@ export interface webhookPropsTypes {
 }
 
 export enum paymentStatus {
-    Success,
-    Failure,
-    Processing
+    Success="Success",
+    Failure="Failure",
+    Processing="Processing"
 }

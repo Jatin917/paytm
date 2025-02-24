@@ -38,8 +38,8 @@ export const SendMoney = () => {
             <div className="flex justify-center pt-4">
                 <Button onClick={async() => {
                     const response = await createP2Pransaction(parseInt(amount), number);
-                    if(!response) return {message:"no transaction was made"};
-                    await sendMoneyHandler(response.token);
+                    if(!response || response.token) return {message:"no transaction was made"};
+                    await sendMoneyHandler(response?.token);
                 }}>
                 Send Money
                 </Button>
