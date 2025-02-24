@@ -2,30 +2,8 @@ import prisma from '@repo/db/client';
 import axios from 'axios';
 import { subHours, startOfDay, endOfDay } from 'date-fns';
 import { createClient } from 'redis';
-
-
-async function getRedisClient(){
-  try {
-    const client = await createClient()
-    .on('error', err => console.log('Redis Client Error', err))
-    .connect();
-    return client;
-  } catch (error) {
-    console.log((error as Error).message);
-  }
-}
-
-async function insertIntoRedis(userId:string, amount:string, recieverId:string, token:string) {
-  try {
-    const client = await getRedisClient();
-    await client?.hSet(token, "amount", amount);
-    await client?.hSet(token, "userId", userId);
-    await client?.hSet(token, "recieverId", recieverId);
-    await client?.hSet(token, "maxRetry", 5);
-  } catch (error) {
-    console.log((error as Error).message);
-  }
-}
+import { getRedisClient, insertIntoRedis } from '../Redis';
+import { paymentStatus, webhookPropsTypes } from '../../TypeDefinition';
 
 const getTodayTransactions = async (tx:any) => {
     try {
@@ -58,12 +36,6 @@ const getTodayTransactions = async (tx:any) => {
         return 0;
     }
 };
-
-interface webhookPropsTypes {
-  userId:string,
-  amount:number,
-  token:number
-}
 
 const sentRequestToWebhook = async(userId: webhookPropsTypes['userId'], amount: webhookPropsTypes['amount'], token : webhookPropsTypes['token'], message:string)=> {
     try {
@@ -99,7 +71,6 @@ const sendMoneyFunction = async (userId:string, parsedAmount:number, recieverId:
         where: { userId: parseInt(userId) },
       });
 
-      console.log(senderBalance);
 
       if (!senderBalance || senderBalance.amount < parsedAmount) {
         throw new Error("Insufficient Funds");
@@ -148,14 +119,13 @@ const sendMoneyFunction = async (userId:string, parsedAmount:number, recieverId:
       // yhaa prr bank webhook server ko request bhejenga that person ne jo amount bheja hain wo successfully sent ho gya hain , what if webhook is down???
       return { message: "Successfully Sent!!!" };
     }, { maxWait: 5000, timeout: 10000 });
-    return {status:200, message:"Success", data:result};
+    return {status:200, message:String(paymentStatus.Success), data:result};
   } catch (error) {
-    return {status:500, message:"Failed"};
+    return {status:500, message:String(paymentStatus.Failure)};
   }
 }
 
 export const sendMoney = async (req: any, res: any) => {
-  // yha main redis main request ko add kr dunga... and when the request finally be sent to webhook i will remove it from redis 1. if the max retry has been reached the request for failure payment will be sent, 2. in case the send money function works we will send success message
     const client = await getRedisClient();
     try {
       // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
