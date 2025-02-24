@@ -117,7 +117,7 @@ const sendMoneyFunction = async (userId:string, parsedAmount:number, recieverId:
       }
 
       // yhaa prr bank webhook server ko request bhejenga that person ne jo amount bheja hain wo successfully sent ho gya hain , what if webhook is down???
-      return { message: "Successfully Sent!!!" };
+      return { message: "Transaction Done" };
     }, { maxWait: 5000, timeout: 10000 });
     return {status:200, message:String(paymentStatus.Success), data:result};
   } catch (error) {
@@ -129,9 +129,9 @@ export const sendMoney = async (req: any, res: any) => {
   console.log("client bn rha hain")
   const client = await getRedisClient();
   console.log("client bn gya hain")
+  // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
+  const { userId, amount, recieverId, token } = req.body.user;
     try {
-      // webhook user ko update krna hain ki money send ho gya hain which then notify the webhook of merchant to add money and notification
-      const { userId, amount, recieverId, token } = req.body.user;
       if(!token) return res.status(401).json({message:"missing field"});
       await insertIntoRedis(token);
       // this function will handle the db process
@@ -163,10 +163,10 @@ export const sendMoney = async (req: any, res: any) => {
       // 6️⃣ ✅ Send Webhook Request after Transaction Success
       console.log("response of money sent is ", response)
       await sentRequestToWebhook(userId, parsedAmount, token, (response?.message || "Failed"));
-      return res.status(200).json(response?.data);
+      return res.status(200).json(response?.message);
     } catch (error) {
       console.error("Error:", error);
-  
+      await sentRequestToWebhook(userId, Number(amount)*100, token, "Failed");
       // Ensure proper error message is returned
       const errorMessage = error instanceof Error ? error.message : "Something went wrong";
       return res.status(errorMessage.includes("Insufficient Funds") ? 400 : 500).json({ message: errorMessage });

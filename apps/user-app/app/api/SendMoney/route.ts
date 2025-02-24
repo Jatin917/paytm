@@ -19,7 +19,7 @@ export async function POST(req:NextRequest){
         if(!response){
           return NextResponse.json({message:"Please Try Again Some Time"}, {status:404});
         }
-        return NextResponse.json({message:"Successfully Sent!!!"}, {status:200});
+        return NextResponse.json({message:(response?.message || "Failed")}, {status:200});
     } catch (error) {
         return NextResponse.json({message:(error as Error).message});
     }

@@ -8,12 +8,12 @@ import { useSession } from "next-auth/react"
 import {useState} from 'react'
 import { createP2Pransaction } from "../../lib/actions/createP2PTransaction"
 
-
 export const SendMoney = () => {
     const [amount, setAmount] = useState('');
     const [number, setNumber] = useState('');
     const session = useSession();
     const sendMoneyHandler = async (token:string) =>{
+        console.log("bank ko req ja rhi hain");
         try {
             const url = process.env.NEXTAUTH_URL || 'http://localhost:3001';
             console.log("url is ", url)
@@ -38,7 +38,8 @@ export const SendMoney = () => {
             <div className="flex justify-center pt-4">
                 <Button onClick={async() => {
                     const response = await createP2Pransaction(parseInt(amount), number);
-                    if(!response || response.token) return {message:"no transaction was made"};
+                    console.log("reponse of create p2p transaction", response);
+                    if(!response || !response.token) return {message:"no transaction was made"};
                     await sendMoneyHandler(response?.token);
                 }}>
                 Send Money
