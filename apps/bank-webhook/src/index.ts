@@ -8,6 +8,12 @@ app.get("/", (req, res)=>{
     res.send("<h1>Backend chal rha hain!!!</h1>");
 })
 
+enum OnRampStatus {
+    Success,
+    Failure,
+    Processing
+  }
+
 app.post("/hdfcWebhookOnRamp", async (req, res) => {
     //TODO: Add zod validation here?
     //TODO: HDFC bank should ideally send us a secret so we know this is sent by them
@@ -65,13 +71,15 @@ app.post("/hdfcWebhookOnP2P", async (req, res) => {
     const paymentInformation: {
         token: string;
         userId: string;
-        amount: string
+        amount: string, 
+        message:string
     } = {
         token: req.body.token,
         userId: req.body.user_identifier,
-        amount: req.body.amount
+        amount: req.body.amount,
+        message:req.body.message
     };
-
+    const message = paymentInformation.message;
     try {
         await db.$transaction([
             db.p2pTransfer.updateMany({
@@ -79,7 +87,7 @@ app.post("/hdfcWebhookOnP2P", async (req, res) => {
                     token: paymentInformation.token
                 }, 
                 data: {
-                    status: "Success",
+                    status:message==="Success"? "Success":"Failure",
                 }
             })
         ]);

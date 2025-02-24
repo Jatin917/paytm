@@ -15,8 +15,8 @@ export const OnP2PTransactions = ({
   }[];
 }) => {
     const [index, setIndex] = useState(0);
-    const transactionToBeShown = transactions.length - index*5>=6 ? transactions.slice(0+index*5, 5) : transactions.slice(index*5);
-    console.log("transactionToBeShown ", transactionToBeShown, transactions, index, transactions.slice(0+index*5));
+    const transactionToBeShown = transactions.length - index*5>=6 ? transactions.slice(0+index*5, (index + 1) * 5) : transactions.slice(index*5);
+    console.log("transactionToBeShown ", transactionToBeShown,transactions.length - index*5>=6, transactions, index, transactions.slice(0+index*5, (index + 1) * 5));
   if (!transactions.length) {
     return (
       <Card title="Recent Transactions">
