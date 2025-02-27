@@ -1,20 +1,15 @@
-/* eslint-disable turbo/no-undeclared-env-vars */
 import CredentialsProvider from 'next-auth/providers/credentials';
-import GitHubProvider from "next-auth/providers/github";
-import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import db from "../../../../packages/db/src"
-import type { Session, User } from "next-auth";
-import { JWT } from 'next-auth/jwt';
+import type { Account, NextAuthOptions, User, Session } from "next-auth";
 
-// Define your custom user type extending NextAuth's User
 interface CustomUser extends User {
   id: string;
   phone?: string;
   name?: string | null;
 }
 
-export const AUTH_OPTIONS = {
+export const AUTH_OPTIONS : NextAuthOptions  = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -37,16 +32,15 @@ export const AUTH_OPTIONS = {
               credentials.password,
               existingUser.password
             );
-            
+
             if (!passwordValid) return null;
 
-            const user = {
+            return {
               id: existingUser.id.toString(),
               name: existingUser.name,
-              email: existingUser.email, // Consider if email should be phone number
+              email: existingUser.email || existingUser.number || "", // Ensure email is always a string
               phone: existingUser.number
             };
-            return user;
           }
 
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
@@ -57,57 +51,47 @@ export const AUTH_OPTIONS = {
             }
           });
 
-          const user = {
+          return {
             id: newUser.id.toString(),
             name: null,
-            email: newUser.number,
+            email: newUser.email || newUser.number || "",
             phone: newUser.number
           };
-          return user;
         } catch (error) {
           console.error("Authentication error:", error);
           return null;
         }
       },
-    }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_ID || "",
-      clientSecret: process.env.GITHUB_SECRET || ""
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
     })
   ],
-  session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
-  jwt: {
-    encryption: false,
-  },
+  session: { strategy: "jwt" as const }, // ✅ Fix 1: Ensure type is `"jwt"`
   callbacks: {
-    async jwt({ token, user } : {token:any, user:any}) {
-      console.log("JWT callback called. Token:", token, "User:", user);
-
+    async jwt({ token, user }: { token: any; user?: CustomUser }) { // ✅ Fix 3: Proper typing
       if (user) {
         token.id = user.id;
         token.name = user.name;
-        token.email = user.email;
+        token.email = user.email || ""; // Ensure email is always a string
       }
-
       return token;
     },
-    async session({ session, token }: {session:any, token:any}) {
-      console.log("Session callback called. Token:", token);
-
-      if (token) {
-        session.user = {
-          id: token.id,
-          name: token.name,
-          email: token.email,
-        };
-      }
-
+    async session({ session, token }: { session: Session; token: any }) { // ✅ Fix 3
+      session.user = {
+        id: token.id,
+        name: token.name,
+        email: token.email || ""
+      };
       return session;
     },
+    async signIn({ user, account, profile, email, credentials }: {  
+      user: User | null;  
+      account: Account | null;  
+      profile?: Record<string, any>;  
+      email?: { verificationRequest?: boolean };  
+      credentials?: Record<string, any>;  
+    }) {  
+      if (!user || !user.email) return false;  // Ensure user and email exist  
+      return true;
+    }
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };

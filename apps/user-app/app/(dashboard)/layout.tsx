@@ -1,5 +1,5 @@
-import { AppbarClient } from "../component/AppbarClient/page";
-import { SidebarItem } from "../component/SidebarItem/page";
+import AppbarClient from "../component/AppbarClient/page";
+import { SidebarItem } from "../component/SidebarItem/SidebarItem";
 
 export default function Layout({
   children,

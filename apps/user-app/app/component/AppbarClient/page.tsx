@@ -3,7 +3,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { Appbar } from "@repo/ui/appbar";
 import { useRouter } from "next/navigation";
 
-export function AppbarClient() {
+export default function AppbarClient() {
   const session = useSession();
   const router = useRouter();
 

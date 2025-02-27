@@ -15,11 +15,11 @@ export async function POST(req:NextRequest){
 
         const response = await axios.post('http://localhost:3003/api-hdfc/sendmoney/',{
           user
-        })
+        });
         if(!response){
           return NextResponse.json({message:"Please Try Again Some Time"}, {status:404});
         }
-        return NextResponse.json({message:(response?.message || "Failed")}, {status:200});
+        return NextResponse.json({message:(response?.data?.message || "Failed")}, {status:200});
     } catch (error) {
         return NextResponse.json({message:(error as Error).message});
     }

@@ -14,7 +14,7 @@ const SUPPORTED_BANKS = [{
     redirectUrl: "https://www.axisbank.com/"
 }];
 
-export const AddMoney = () => {
+export default function AddMoney() {
     const [redirectUrl, setRedirectUrl] = useState(SUPPORTED_BANKS[0]?.redirectUrl);
     const [provider, setProvider] = useState(SUPPORTED_BANKS[0]?.name || "");
     const [value, setValue] = useState(0)

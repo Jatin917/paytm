@@ -1,9 +1,9 @@
 import prisma from "../../../../../packages/db/src";
-import { BalanceCard } from "../../component/BalanceCard/page";
+import BalanceCard from "../../component/BalanceCard/BalanceCard";
 import { getServerSession } from "next-auth";
 import { AUTH_OPTIONS } from "../../lib/auth";
-import { AddMoney } from "../../component/AddMoney/page";
-import { OnRampTransactions } from "../../component/onRampTransaction/page";
+import AddMoney  from "../../component/AddMoney/AddMoney";
+import { OnRampTransactions } from "../../component/onRampTransaction/onRampTransaction";
 
 interface userTypes {
     id: string | null
@@ -41,7 +41,7 @@ async function getOnRampTransactions() {
     }))
 }
 
-export default async function() {
+export default async function Page() {
     const balance = await getBalance();
     const transactions = await getOnRampTransactions();
 

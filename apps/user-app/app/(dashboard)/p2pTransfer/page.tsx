@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { SendMoney } from "../../component/SendMoney/SendMoney";
 import { AUTH_OPTIONS } from "../../lib/auth";
 import prisma from "../../../../../packages/db/src";
-import { OnP2PTransactions } from "../../component/p2pTransaction/page";
+import { OnP2PTransactions } from "../../component/p2pTransaction/p2pTransaction";
 
 interface userTypes {
     id: string | null
