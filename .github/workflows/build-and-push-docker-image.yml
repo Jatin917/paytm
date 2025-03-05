@@ -22,7 +22,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: .
-        file: ./Docker/Dcokerfile.user-app
+        file: ./Docker/Dockerfile.user-app
         push: true
         tags: jaaitin/paytm:v1  # Replace with your Docker Hub username and repository
 
