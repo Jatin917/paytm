@@ -12,6 +12,13 @@ interface userTypes {
     image?: string | null;
 }
 
+type Transaction = {
+    startTime: Date;  // Or Date if applicable
+    amount: number;
+    status: string;
+    provider:string;
+  };
+
 async function getBalance() {
     const session = await getServerSession(AUTH_OPTIONS);
     // console.log("user id", session?.user);
@@ -33,7 +40,7 @@ async function getOnRampTransactions() {
             userId: Number((session?.user as userTypes)?.id) || undefined
         }
     });
-    return txns.map(t => ({
+    return txns.map((t:Transaction) => ({
         time: t.startTime,
         amount: t.amount,
         status: t.status,
