@@ -10,6 +10,11 @@ interface userTypes {
     email?: string | null;
     image?: string | null;
 }
+type Transaction = {
+    timestamp: Date;  // Or Date if applicable
+    amount: number;
+    status: string;
+  };
 
 async function getOnp2pTransactions() {
     const session = await getServerSession(AUTH_OPTIONS);
@@ -18,7 +23,7 @@ async function getOnp2pTransactions() {
             fromUserId: Number((session?.user as userTypes)?.id) || undefined
         }
     });
-    return txns.map(t => ({
+    return txns.map((t:Transaction) => ({
         time: t.timestamp,
         amount: t.amount,
         status: t.status,
