@@ -26,15 +26,14 @@ export const AUTH_OPTIONS : NextAuthOptions  = {
           const existingUser = await db.user.findFirst({
             where: { number: credentials.phone }
           });
-
           if (existingUser) {
             const passwordValid = await bcrypt.compare(
               credentials.password,
               existingUser.password
             );
-
+            console.log(existingUser, "password valid ", credentials.password, existingUser.password, passwordValid)
             if (!passwordValid) return null;
-
+            console.log("authorization success");
             return {
               id: existingUser.id.toString(),
               name: existingUser.name,

@@ -12,8 +12,9 @@ export async function POST(req:NextRequest){
         const user =  await req.json();
         console.log("user body is: ",user);
         // console.log(userId, amount, recieverId);
-
-        const response = await axios.post('http://localhost:3003/api-hdfc/sendmoney/',{
+        const bank_server = process.env.BANK_SERVER;
+        console.log("bank-webhook", bank_server);
+        const response = await axios.post(`${bank_server}/api-hdfc/sendmoney/`,{
           user
         });
         if(!response){
