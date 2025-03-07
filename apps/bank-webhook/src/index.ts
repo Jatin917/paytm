@@ -1,5 +1,8 @@
 import express from "express";
 import db from "@repo/db/client";
+import dotenv from 'dotenv'
+
+dotenv.config();
 const app = express();
 
 app.use(express.json())
@@ -104,5 +107,5 @@ app.post("/hdfcWebhookOnP2P", async (req, res) => {
     }
 
 })
-const PORT = 3002
+const PORT = process.env.PORT
 app.listen(PORT, ()=> console.log("webhook is running on port: ", PORT));

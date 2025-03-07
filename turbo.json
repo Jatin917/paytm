@@ -3,7 +3,7 @@
   "globalDependencies": ["**/.env.*local"],
   "pipeline": {
     "build": {
-      "env": ["NEXTAUTH_URL", "NEXTAUTH_SECRET", "DATABASE_URL", "GITHUB_ID", "GITHUB_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "JWT_SECRET", "SERVER_WEBHOOK", "PORT"],
+      "env": ["NEXTAUTH_URL", "NEXTAUTH_SECRET", "DATABASE_URL", "GITHUB_ID", "GITHUB_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "JWT_SECRET", "SERVER_WEBHOOK", "PORT", "BANK_WEBHOOK"],
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
