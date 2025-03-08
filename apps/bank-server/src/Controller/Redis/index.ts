@@ -41,6 +41,3 @@ export async function insertIntoRedis(token:string) {
   }
 }
 
-function connect() {
-  throw new Error("Function not implemented.");
-}
