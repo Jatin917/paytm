@@ -3,10 +3,14 @@ import {createClient} from "redis";
 export async function getRedisClient(retries = 3, delay = 2000) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const client = createClient({socket: {
-        host: '0.0.0.0',  // Replace with the actual IP
-        port: 6379,
-      },});
+      const client = createClient({
+        username: 'default',
+        password: process.env.REDIS_PASSWORD,
+        socket: {
+            host: process.env.REDIS_HOST,
+            port: Number(process.env.REDIS_PORT)
+        }
+    });
       client.on('error', (err) => {
         console.error('Redis Client Error', err);
         throw err; // Immediately exit the current operation
