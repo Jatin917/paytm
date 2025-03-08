@@ -27,7 +27,7 @@ export const OnP2PTransactions = ({
   return (
     <Card title="Recent Transactions">
       <div className="pt-2">
-        {transactionToBeShown.map((t) => (
+        {transactionToBeShown?.map((t) => (
           <div className="flex justify-between">
             <div>
               <div className="text-sm">Received INR</div>
