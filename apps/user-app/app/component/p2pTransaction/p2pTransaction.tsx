@@ -8,7 +8,7 @@ export const OnP2PTransactions = ({
   transactions,
 }: {
   transactions: {
-    time: Date;
+    timestamp: Date;
     amount: number;
     // TODO: Can the type of `status` be more specific?
     status: string;
@@ -32,7 +32,7 @@ export const OnP2PTransactions = ({
             <div>
               <div className="text-sm">Received INR</div>
               <div className="text-slate-600 text-xs">
-                {t.time.toDateString()}
+                {t.timestamp.toDateString()}
               </div>
             </div>
             <div className="flex flex-col justify-center">

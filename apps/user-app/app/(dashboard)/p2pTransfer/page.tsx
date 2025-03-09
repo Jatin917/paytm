@@ -16,24 +16,18 @@ type Transaction = {
     status: string;
   };
 
-async function getOnp2pTransactions() {
+async function getOnp2pTransactions():Promise<Transaction[]> {
     const session = await getServerSession(AUTH_OPTIONS);
-    try {
         const txns = await prisma.p2pTransfer.findMany({
             where: {
                 fromUserId: Number((session?.user as userTypes)?.id) || undefined
             }
         });
         return txns.map((t:Transaction) => ({
-            time: t.timestamp,
+            timestamp: t.timestamp,
             amount: t.amount,
             status: t.status,
         }))
-    } catch (error) {
-        return <>
-            DB id Down 
-        </>
-    }
 }
 export default async function(){
     const transactions = await getOnp2pTransactions();
