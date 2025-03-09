@@ -15,9 +15,9 @@ export const SendMoney = () => {
     const sendMoneyHandler = async (token:string) =>{
         console.log("bank ko req ja rhi hain");
         try {
-            const url = process.env.NEXTAUTH_URL || 'http://localhost:3001';
+            const url = process.env.NEXTAUTH_URL;
             console.log("url is ", url)
-            const response = await axios.post(`${url}/api/SendMoney`, {
+            const response = await axios.post(`/api/SendMoney`, {
                 userId:session?.data?.user?.id,
                 amount:amount,
                 recieverId:number,
