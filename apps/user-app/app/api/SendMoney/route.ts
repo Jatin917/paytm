@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Erica_One } from "next/font/google";
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -17,10 +18,11 @@ export async function POST(req:NextRequest){
         const response = await axios.post(`${bank_server}/api-hdfc/sendmoney/`,{
           user
         });
-        if(!response){
-          return NextResponse.json({message:"Please Try Again Some Time"}, {status:404});
+        console.log("response is", response);
+        if(response.status!==200){
+          return NextResponse.json({message:response?.data}, {status:404});
         }
-        return NextResponse.json({message:(response?.data?.message || "Failed")}, {status:200});
+        return NextResponse.json({message:(response?.data)}, {status:response.status});
     } catch (error) {
         return NextResponse.json({message:(error as Error).message});
     }

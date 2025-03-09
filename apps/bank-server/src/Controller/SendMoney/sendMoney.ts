@@ -161,8 +161,8 @@ try {
   }
   // 6️⃣ ✅ Send Webhook Request after Transaction Success
   console.log("response of money sent is ", response);
-  await sentRequestToWebhook(userId, parsedAmount, token, (response?.message || "Failed"));
-  return res.status(200).json(response?.message);
+  await sentRequestToWebhook(userId, parsedAmount, token, (response?.data?.message || "Failed"));
+  return res.status(200).json(response?.data?.message);
 } catch (error) {
   console.error("Error:", error);
   await sentRequestToWebhook(userId, Number(amount) * 100, token, "Failed");
