@@ -17,7 +17,7 @@ export const SendMoney = () => {
         try {
             const url = process.env.NEXTAUTH_URL;
             console.log("url is ", url)
-            const response = await axios.post(`${url}/api/SendMoney`, {
+            const response = await axios.post(`/api/SendMoney`, {
                 userId:session?.data?.user?.id,
                 amount:amount,
                 recieverId:number,
